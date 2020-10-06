@@ -39,7 +39,7 @@ class FlappyBird : ApplicationAdapter() {
     override fun create() {
         batch = SpriteBatch()
         backGround = Texture("background-day.png")
-        bottomBackGround = Texture("bottom-background.png")
+        bottomBackGround = Texture("base.png")
         birdState.add(Texture("bluebird-downflap.png"))
         birdState.add(Texture("bluebird-midflap.png"))
         birdState.add(Texture("bluebird-upflap.png"))
@@ -57,8 +57,6 @@ class FlappyBird : ApplicationAdapter() {
         gapBetweenPipes = ((birdSize*4.5).toFloat())
 
         //bird falls due to gravity
-        birdYCordinate = (Gdx.graphics.height/ 2 - birdSize/ 2)
-
         birdYCordinate = (Gdx.graphics.height/2 - birdSize/2)
         maxPipeOffset = (Gdx.graphics.height - gapBetweenPipes*3/2).toFloat()
         //.toFloat converts the values to Float type
@@ -94,37 +92,28 @@ class FlappyBird : ApplicationAdapter() {
                     pipeInX[i] = pipeInX[i] - pipeVelocity
                 }
 
-                    //topPipe
+                // Top Pipe
                 batch!!.draw(
                         topPipe,
                         pipeInX[i],
-                        (Gdx.graphics.height/2 + gapBetweenPipes/2) + distanceBetweenVerticalPipes[i],
+                        (Gdx.graphics.height / 2 + gapBetweenPipes / 2) + distanceBetweenVerticalPipes[i],
                         birdSize*2,
-                        (Gdx.graphics.height/2 - gapBetweenPipes/2) +
+                        (Gdx.graphics.height / 2 - gapBetweenPipes / 2) +
                                 maxPipeOffset*0.5f
                 )
-
-                    //bottomPipe
-//                batch!!.draw(
-//                        bottomPipe,
-//                        pipeInX[i],
-//                        0f - (Gdx.graphics.height - gapBetweenPipes*3/2)*0.5f + distanceBetweenVerticalPipes[i],
-//                        birdSize*2,
-//                        (Gdx.graphics.height/2 - gapBetweenPipes/2) +
-//                                maxPipeOffset*0.5f
-//                )
-
+                // Bottom Pipe
                 batch!!.draw(
                         bottomPipe,
                         pipeInX[i],
-                        (Gdx.graphics.height/4).toFloat(),
+                        0f - (Gdx.graphics.height - gapBetweenPipes - gapBetweenPipes/2)*0.5f + distanceBetweenVerticalPipes[i],
                         birdSize*2,
                         (Gdx.graphics.height/2 - gapBetweenPipes/2) +
                                 maxPipeOffset*0.5f
                 )
 
             }
-            if ((birdYCordinate > (Gdx.graphics.height/4)) || birdVelocity < 0) {
+            if (birdYCordinate > 0 || birdVelocity < 0) {
+                //change 0 to (height/4) after adding bottomBackGround
                 birdVelocity += gravity
                 birdYCordinate -= birdVelocity
             }
@@ -142,10 +131,10 @@ class FlappyBird : ApplicationAdapter() {
         }
 
         //bottomBackground
-        batch!!.draw(bottomBackGround, 0f, 0f,
-                (Gdx.graphics.width).toFloat(),
-                (Gdx.graphics.height*1/4).toFloat()
-        )
+//        batch!!.draw(bottomBackGround, 0f, 0f,
+//                (Gdx.graphics.width).toFloat(),
+//                (Gdx.graphics.height*1/4).toFloat()
+//        )
 
         //bird
         batch!!.draw(birdState[flapState],
