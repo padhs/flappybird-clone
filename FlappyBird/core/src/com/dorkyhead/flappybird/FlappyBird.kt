@@ -55,12 +55,19 @@ class FlappyBird : ApplicationAdapter() {
 
     var message: Texture? = null
 
+    //playButton
+    var playButton: Texture? = null
+
 
     //scoring integer variable
     var score = 0
     var scorePipe = 0
     var bitmapFont: BitmapFont? = null
     var scoreTextures = mutableListOf<Texture>()
+
+    //gameOver
+    var gameOver: Texture? = null
+
 
 
     override fun create() {
@@ -79,6 +86,7 @@ class FlappyBird : ApplicationAdapter() {
         bottomPipe = Texture("bottomPipe.png")
 
         message = Texture("message.png")
+        playButton = Texture("start-button.png")
 
         //bird size
         birdSize = min(
@@ -87,8 +95,7 @@ class FlappyBird : ApplicationAdapter() {
         )
         gapBetweenPipes = ((birdSize*4.2).toFloat())
 
-        //bird falls due to gravity
-        birdYCordinate = (Gdx.graphics.height/2 - birdSize/2)
+
         maxPipeOffset = (Gdx.graphics.height - gapBetweenPipes*1.64).toFloat()
         //.toFloat converts the values to Float type
 
@@ -103,22 +110,39 @@ class FlappyBird : ApplicationAdapter() {
         bitmapFont!!.setColor(Color.WHITE)
         bitmapFont!!.data.scale(birdSize/10)
 
+        //gameOver
+        gameOver = Texture("gameover.png")
+
         for (i in 0..9){
             scoreTextures.add(Texture("${i}.png"))
         }
 
         //bringing in the pipes from right to left:
         for (i in 0 until numberOfPipes){
-            pipeInX[i] = (Gdx.graphics.width + i*distanceBetweenHorizontalPipes).toFloat()
-            distanceBetweenVerticalPipes[i] = (randomGenerator!!.nextFloat() - 0.5f)* maxPipeOffset
 
             topPipeRectangle.add(Rectangle())
             bottomPipeRectangle.add(Rectangle())
         }
 
+        startGame()
+    }
+
+    private fun startGame(){
+        birdVelocity = 0f
+        score = 0
+        scorePipe = 0
+
+        //gravity system
+        birdYCordinate = (Gdx.graphics.height/2 - birdSize/2)
+        for (i in 0 until numberOfPipes) {
+            pipeInX[i] = (Gdx.graphics.width + i * distanceBetweenHorizontalPipes).toFloat()
+            distanceBetweenVerticalPipes[i] = (randomGenerator!!.nextFloat() - 0.5f) * maxPipeOffset
+        }
     }
 
     override fun render() {
+
+        Gdx.app.log("birdYCordinate", "${birdYCordinate}")
 
         //backGround
         batch!!.begin()
@@ -129,16 +153,8 @@ class FlappyBird : ApplicationAdapter() {
                 Gdx.graphics.width.toFloat(),
                 Gdx.graphics.height.toFloat()
         )
-        //gamPlayMessage
-//        batch!!.draw(
-//                message,
-//                0f + (Gdx.graphics.width/4),
-//                (Gdx.graphics.height/3.toFloat()),
-//                (Gdx.graphics.width/2).toFloat(),
-//                (Gdx.graphics.height/2).toFloat()
-//        )
 
-        if (gameState != 0) {
+        if (gameState == 1) {
                 if (pipeInX[scorePipe] < (Gdx.graphics.width/2)){
                     score++
                     Gdx.app.log("Score", "${score}")
@@ -172,16 +188,6 @@ class FlappyBird : ApplicationAdapter() {
                                 maxPipeOffset*0.5f
 
                 )
-                    //bottomPipe shapeRenderer
-                    bottomPipeRectangle[i].set(
-                            pipeInX[i],
-                            0f - ((Gdx.graphics.height - gapBetweenPipes/3.7)*0.5f).toFloat() + distanceBetweenVerticalPipes[i] +
-                                    maxPipeOffset*0.47f,
-                            birdSize*2,
-                            (Gdx.graphics.height/2 - gapBetweenPipes/2) +
-                                    maxPipeOffset*0.5f
-                    )
-
 
                     //topPipes
                     batch!!.draw(
@@ -192,18 +198,13 @@ class FlappyBird : ApplicationAdapter() {
                             birdSize * 2,
                             (Gdx.graphics.height*2/3).toFloat()
                     )
-                    //topPipe shapeRenderer
-                    topPipeRectangle[i].set(
-                            pipeInX[i],
-                            ((Gdx.graphics.height - gapBetweenPipes/3.7)*0.5f).toFloat() + distanceBetweenVerticalPipes[i] +
-                                    maxPipeOffset*0.47f + gapBetweenPipes/10,
-                            birdSize * 2,
-                            (Gdx.graphics.height*2/3).toFloat()
-                    )
+
                 }
-                if (birdYCordinate > (Gdx.graphics.height / 4) || birdVelocity < 0) {
+                if (birdYCordinate > (Gdx.graphics.height/4.5) || birdVelocity < 0) {
                     birdVelocity += gravity
                     birdYCordinate -= birdVelocity
+                } else {
+                    gameState = 2
                 }
 
                 when (flapState) {
@@ -212,17 +213,36 @@ class FlappyBird : ApplicationAdapter() {
                     2 -> flapState = 3
                     3 -> flapState = 0
                 }
-            } else {
-                if (Gdx.input.justTouched()) {
-                    gameState = 1
-                }
             }
+        else if (gameState == 0){
 
-        //bottomBackground
-        batch!!.draw(bottomBackGround, 0f, 0f,
-                (Gdx.graphics.width).toFloat(),
-                (Gdx.graphics.height/4).toFloat()
-        )
+            //gameplay message
+            batch!!.draw(
+                    message,
+                    0f + (Gdx.graphics.width/4),
+                    (Gdx.graphics.height/2.8).toFloat(),
+                    (Gdx.graphics.width/2).toFloat(),
+                    (Gdx.graphics.height/2).toFloat()
+            )
+
+          if (Gdx.input.justTouched()){
+              gameState = 1
+          }
+        }
+        else if (gameState == 2){
+            batch!!.draw(
+                    gameOver,
+                    (Gdx.graphics.width / 2 - birdSize*3),
+                    Gdx.graphics.height /2 - birdSize/2,
+                    birdSize*6,
+                    birdSize
+            )
+
+            if (Gdx.input.justTouched()){
+                startGame()
+                gameState = 1
+            }
+        }
 
         //bird
         batch!!.draw(birdState[flapState],
@@ -245,14 +265,6 @@ class FlappyBird : ApplicationAdapter() {
         if (scoreNew == 0)
         {
 
-            //gameplay message
-//            batch!!.draw(
-//                    message,
-//                    0f + (Gdx.graphics.width/4),
-//                    (Gdx.graphics.height/3.toFloat()),
-//                    (Gdx.graphics.width/2).toFloat(),
-//                    (Gdx.graphics.height/2).toFloat()
-//            )
                 //0-score
                 batch!!.draw(
                         scoreTextures[0],
@@ -284,14 +296,42 @@ class FlappyBird : ApplicationAdapter() {
                         birdSize)
             }
         }
-        batch!!.end()
+
+        //bottomBackground again so the pipes appear they are behind the bottomBackGround
+        batch!!.draw(bottomBackGround, 0f, 0f,
+                (Gdx.graphics.width).toFloat(),
+                (Gdx.graphics.height/4.5).toFloat()
+        )
+
 
         //collision detection
         for (i in 0 until numberOfPipes){
+
+            //bottomPipe shapeRenderer
+            bottomPipeRectangle[i].set(
+                    pipeInX[i],
+                    0f - ((Gdx.graphics.height - gapBetweenPipes/3.7)*0.5f).toFloat() + distanceBetweenVerticalPipes[i] +
+                            maxPipeOffset*0.47f,
+                    birdSize*2,
+                    (Gdx.graphics.height/2 - gapBetweenPipes/2) +
+                            maxPipeOffset*0.5f
+            )
+
+            //topPipe shapeRenderer
+            topPipeRectangle[i].set(
+                    pipeInX[i],
+                    ((Gdx.graphics.height - gapBetweenPipes/3.7)*0.5f).toFloat() + distanceBetweenVerticalPipes[i] +
+                            maxPipeOffset*0.47f + gapBetweenPipes/10,
+                    birdSize * 2,
+                    (Gdx.graphics.height*2/3).toFloat()
+            )
+
             if ((Intersector.overlaps(birdCircle, topPipeRectangle[i])) || (Intersector.overlaps(birdCircle, bottomPipeRectangle[i]))){
                 Gdx.app.log("Collision", "Detected!")
+                gameState = 2
             }
         }
+        batch!!.end()
         //shapeRenderer ends
     }
 
